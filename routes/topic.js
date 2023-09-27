@@ -3,9 +3,14 @@ var path = require('path');
 var router = express.Router();
 var fs = require('fs');
 var sanitizeHtml = require('sanitize-html');
-var template = require('../lib/template.js');
+var template = require('../lib/template');
+var auth = require('../lib/auth');
 
 router.get('/create', function(request, response) {	
+	if (!auth.isOwner(request, response)) {
+		response.redirect('/');
+		return false;
+	}
 	var title = 'WEB - create';
 	var list = template.list(request.list);
 	var html = template.HTML(title, list, `
@@ -22,7 +27,11 @@ router.get('/create', function(request, response) {
 	response.send(html);	
 });
 
-router.post('/create_process', function(request, response) {		
+router.post('/create_process', function(request, response) {	
+	if (!auth.isOwner(request, response)) {
+		response.redirect('/');
+		return false;
+	}
 	var post = request.body;
 	var title = post.title;
 	var description = post.description;
@@ -31,7 +40,11 @@ router.post('/create_process', function(request, response) {
 	});
 });
 
-router.post('/update_process', function(request, response) {		
+router.post('/update_process', function(request, response) {	
+	if (!auth.isOwner(request, response)) {
+		response.redirect('/');
+		return false;
+	}	
 	var post = request.body;
 	var id = post.id;
 	var title = post.title;
@@ -68,6 +81,10 @@ router.get('/update/:pageId', function(request, response) {
 });
 
 router.post('/delete_process', function(request, response) {
+	if (!auth.isOwner(request, response)) {
+		response.redirect('/');
+		return false;
+	}
 	var post = request.body;
 	var id = post.id;
 	var filteredId = path.parse(id).base;

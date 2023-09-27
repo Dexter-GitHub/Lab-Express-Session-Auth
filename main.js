@@ -5,13 +5,20 @@ var bodyParser = require('body-parser');
 var compression = require('compression');
 var helmet = require('helmet');
 app.use(helmet());
-
-var indexRouter = require('./routes/index');
-var topicRouter = require('./routes/topic');
+var session = require('express-session');
+var FileStore = require('session-file-store')(session); // session을 저장해주는 모듈
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(compression());
+// session 시작 및 옵션 설정
+app.use(session({
+    secret: 'asadlfkj!@#!@#dfgasdg',
+    resave: false,
+    saveUninitialized: true,
+    store: new FileStore()
+}));
+
 app.get('*', function(request, response, next) {
 	fs.readdir('./data', function(error, filelist) {
 		request.list = filelist;
@@ -19,8 +26,13 @@ app.get('*', function(request, response, next) {
 	});
 });
 
+var indexRouter = require('./routes/index');
+var topicRouter = require('./routes/topic');
+var authRouter = require('./routes/auth');
+
 app.use('/', indexRouter);
 app.use('/topic', topicRouter);
+app.use('/auth', authRouter);
 
 app.use(function(request, response, next) {	
 	response.status(404).send('Sorry cant find that!');
